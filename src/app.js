@@ -4,21 +4,24 @@ const connectDB = require('./config/database');
 const app = express();
 const User = require('./models/user')
 
+
+//for middleware we need to use app.use 
+
+app.use(express.json())
 //sign up api
 
 
 app.post('/signup', async(req, res)=>{
-    const userobj = {
-        firstName : "Nisha",
-        lastName : "Gawade", 
-        emailId : "nishagawade2021@gmail.com",
-        password : "Nisha@123"
-    }
-//creating a new instance of a user model
-    const user = new User(userobj)
-    await user.save()
+    console.log(req.body)
 
-    res.send("user added successfully")
+    const user = new User(req.body)
+    try{
+        await user.save();
+        res.send("user added successfully")
+    }catch(err){
+        res.status(400).send("error saving the user" + err.message)
+    }
+
 })
 
 
