@@ -25,6 +25,84 @@ app.post('/signup', async(req, res)=>{
 })
 
 
+//need to fetch users using email id
+
+app.get('/user', async (req, res)=>{
+    
+    const userEmail = req.body.emailId;
+    
+
+    try{
+         const user = await User.find({emailId : userEmail})
+           
+           if(user.length == 0){
+            res.status(400).send("user not found")
+           }else{
+            res.send(user)
+           }
+           
+        
+    }catch(err){
+          res.status(400).send("something went wrong")
+    }
+})
+
+
+//how to fetch all users fromt the database 
+
+app.get('/fetch', async (req, res)=>{
+
+    try{
+
+        const users = await User.find({});
+        res.send(users)
+
+    }catch(err){
+        res.status(400).send("something went wrong")
+    }
+})
+
+//delete api
+
+app.delete('/user', async(req ,res)=>{
+
+  
+
+    try{
+        const userId = req.body.userId;
+        const user = await User.findByIdAndDelete(userId);
+        res.send("user deleted successfully")
+
+    }catch(err){
+        res.status(400).send("something went wrong")
+    }
+   
+})
+
+
+//update api using patch
+
+app.patch('/user', async(req, res)=>{
+
+    
+
+    try{
+
+        const userId = req.body.userId;
+         const data = req.body
+         const user = await User.findByIdAndUpdate({ _id : userId} , data)
+
+         res.send("user updated successfully")
+
+
+
+    }catch(err){
+        res.status(400).send("something went wrong")
+    }
+})
+
+
+
   
   
 
