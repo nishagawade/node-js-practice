@@ -23,7 +23,7 @@ const userAuth = async(req, res, next) =>{
             throw new Error("User not found")
         }
        
-        req.user = user;
+        req.user = user;  //loggedin user
         next()
 
     }catch(err){
