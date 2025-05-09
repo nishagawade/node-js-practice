@@ -1,15 +1,19 @@
 const express = require('express');
 const connectDB = require('./config/database');
-const {validateSignUpData} = require('./utils/validation')
+const { validateSignUpData } = require('./utils/validation')
 const bcrypt = require('bcrypt')
 
 const app = express();
-const User = require('./models/user')
+const User = require('./models/user');
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const { userAuth } = require('./middlewares/auth')
 
 
 //for middleware we need to use app.use 
 
 app.use(express.json())
+app.use(cookieParser())
 //sign up api
 
 
@@ -21,20 +25,20 @@ app.use(express.json())
 app.post('/signup', async (req, res) => {
     console.log(req.body)
 
-    
+
     try {
-         validateSignUpData(req)
- 
-         const {firstName, lastName, emailId, password} = req.body
+        validateSignUpData(req)
 
-         const passwordHash = await bcrypt.hash(password , 10);
+        const { firstName, lastName, emailId, password } = req.body
 
-      
+        const passwordHash = await bcrypt.hash(password, 10);
+
+
         const user = new User({
             firstName,
-             lastName, 
-             emailId, 
-             password : passwordHash
+            lastName,
+            emailId,
+            password: passwordHash
         })
         await user.save();
         res.send("user added successfully")
@@ -44,114 +48,62 @@ app.post('/signup', async (req, res) => {
 
 })
 
-app.post('/login', async(req, res)=>{
-
-    try{
-       const {emailId, password} = req.body;
-       
-       const user = await User.findOne({emailId : emailId});
-       if(!user){
-        throw new Error("Email is not present in DB")
-       }
-       const isPasswordValid =  await bcrypt.compare(password, user.password);
-
-       if(isPasswordValid){
-         res.send("user login successfull")
-       }else{
-        throw new Error("password is not correct")
-       }
-
-    }catch(err){
-        res.status(400).send("error saving the user" + err.message)
-    }
-})
-
-
-//need to fetch users using email id
-
-app.get('/user', async (req, res) => {
-
-    const userEmail = req.body.emailId;
-
+app.post('/login', async (req, res) => {
 
     try {
-        const user = await User.find({ emailId: userEmail })
+        const emailId = req.body.emailId?.trim().toLowerCase();
+        const password = req.body.password;
 
-        if (user.length == 0) {
-            res.status(400).send("user not found")
+
+        const user = await User.findOne({ emailId: emailId }).exec();;
+        console.log(user, "user")
+        if (!user) {
+            throw new Error("Email is not present in DB")
+        }
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (isPasswordValid) {
+
+            //we will use now jwt token to verify the user, when the user login from the client , server will give 
+            //them a jwt token , after that when we send a connection request, view profile this token is used to verify the user 
+            //in jwt we hide user id using a secret key which only server knows
+
+            const token = jwt.sign({ _id: user._id }, "DEV@Tinder$789",
+                { expiresIn: "1d" }
+            );
+            console.log(token)
+            res.cookie("token", token)
+            res.send("user login successfull")
         } else {
-            res.send(user)
+            throw new Error("password is not correct")
         }
 
-
     } catch (err) {
-        res.status(400).send("something went wrong")
+        res.status(400).send("error saving the user," + "" + err.message)
     }
 })
 
-
-//how to fetch all users fromt the database 
-
-app.get('/fetch', async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
 
     try {
 
-        const users = await User.find({});
-        res.send(users)
+        const user = req.user
+        res.send(user)
 
     } catch (err) {
-        res.status(400).send("something went wrong")
+        res.status(400).send("error saving the user," + "" + err.message)
     }
-})
 
-//delete api
-
-app.delete('/user', async (req, res) => {
-
-
-
-    try {
-        const userId = req.body.userId;
-        const user = await User.findByIdAndDelete(userId);
-        res.send("user deleted successfully")
-
-    } catch (err) {
-        res.status(400).send("something went wrong")
-    }
 
 })
 
+app.post('/sendConnectionRequest', userAuth, (req, res) => {
 
-//update api using patch
-
-app.patch('/user', async (req, res) => {
-    const userId = req.body.userId;
-    const data = req.body
-
-
-
-
-    try {
-
-        // const ALLOWED_UPDATES = ["photoUrl", "about", "gender", "age", "skills", "lastName"];
-
-        // const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATES.includes(k));
-
-        // if (!isUpdateAllowed) {
-        //     throw new Error("update not allowed")
-        // }
-
-        const user = await User.findByIdAndUpdate(userId, data, { new: true });
-        console.log(user)
-
-        res.send("user updated successfully")
-
-
-
-    } catch (err) {
-        res.status(400).send("something went wrong" + err)
-    }
+    const user = req.user
+    res.send(user.firstName + " is sending connection request")
 })
+
+
 
 
 

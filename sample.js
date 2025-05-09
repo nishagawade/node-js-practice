@@ -45,3 +45,91 @@
 
 //     res.send("user added successfully")
 // })
+
+//sample apis
+
+//need to fetch users using email id
+
+// app.get('/user', async (req, res) => {
+
+//     const userEmail = req.body.emailId;
+
+
+//     try {
+//         const user = await User.find({ emailId: userEmail })
+
+//         if (user.length == 0) {
+//             res.status(400).send("user not found")
+//         } else {
+//             res.send(user)
+//         }
+
+
+//     } catch (err) {
+//         res.status(400).send("something went wrong")
+//     }
+// })
+
+
+// //how to fetch all users fromt the database 
+
+// app.get('/fetch', async (req, res) => {
+
+//     try {
+
+//         const users = await User.find({});
+//         res.send(users)
+
+//     } catch (err) {
+//         res.status(400).send("something went wrong")
+//     }
+// })
+
+// //delete api
+
+// app.delete('/user', async (req, res) => {
+
+
+
+//     try {
+//         const userId = req.body.userId;
+//         const user = await User.findByIdAndDelete(userId);
+//         res.send("user deleted successfully")
+
+//     } catch (err) {
+//         res.status(400).send("something went wrong")
+//     }
+
+// })
+
+
+// //update api using patch
+
+// app.patch('/user', async (req, res) => {
+//     const userId = req.body.userId;
+//     const data = req.body
+
+
+
+
+//     try {
+
+//         // const ALLOWED_UPDATES = ["photoUrl", "about", "gender", "age", "skills", "lastName"];
+
+//         // const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATES.includes(k));
+
+//         // if (!isUpdateAllowed) {
+//         //     throw new Error("update not allowed")
+//         // }
+
+//         const user = await User.findByIdAndUpdate(userId, data, { new: true });
+//         console.log(user)
+
+//         res.send("user updated successfully")
+
+
+
+//     } catch (err) {
+//         res.status(400).send("something went wrong" + err)
+//     }
+// })
