@@ -47,7 +47,7 @@ authRouter.post('/login', async (req, res) => {
         const password = req.body.password;
 
 
-        const user = await User.findOne({ emailId: emailId }).exec();;
+        const user = await User.findOne({ emailId: emailId }).exec();
         console.log(user, "user")
         if (!user) {
             throw new Error("Email is not present in DB")
