@@ -4,6 +4,7 @@ const app = express();
 
 const cookieParser = require("cookie-parser");
 const cors = require('cors');
+const http = require('http')
 
 
 
@@ -21,6 +22,7 @@ const profileRouter = require('./routes/profile');
 const requestRouter = require('./routes/request');
 const { userRouter } = require('./routes/userRequest');
 const { paymentRouter } = require('./routes/payment');
+const initializeSocket = require('./utils/socket');
 
 app.use('/', authRouter);
 app.use('/', profileRouter);
@@ -28,11 +30,14 @@ app.use('/', requestRouter);
 app.use('/', userRouter)
 app.use('/', paymentRouter)
 
+const server = http.createServer(app)
+initializeSocket(server)
+
 
 
 connectDB().then(() => {
     console.log("mongodb is connected")
-    app.listen(3001, () => {
+    server.listen(3001, () => {
         console.log("server is running successfully on port 3001...")
     })
 }).catch((err) => {
